@@ -30,15 +30,15 @@ class UserServiceImpl(
             true,
             true,
             true,
-            true, emptyList()
+            true, user.authorities
         )
     }
 
     @Transactional
     override fun createUser(createUserRequest: CreateUserRequest): CreateUserResponse {
         val email = createUserRequest.email
-        val found = userRepository.findUserByEmail(email)
-        if (found != null) {
+
+        if (userRepository.doesEmailExist(email)) {
             throw BadRequestException("Email in use")
         }
         val newUser = UserEntity {

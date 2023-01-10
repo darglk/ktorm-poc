@@ -1,0 +1,2 @@
+INSERT INTO authorities (id, name) VALUES ('263dbdfe-a1fc-40b3-a6b6-8f51235ec463', 'WRITE_AUTHORITY');
+INSERT INTO authorities (id, name) VALUES ('f4316249-c34d-4093-8f44-1987f640fa5f', 'READ_AUTHORITY');
