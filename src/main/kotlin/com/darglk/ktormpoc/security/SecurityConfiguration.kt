@@ -22,13 +22,14 @@ class SecurityConfiguration(
     override fun configure(web: WebSecurity?) {
         web?.ignoring()
             ?.antMatchers("/api/users/signup")
+            ?.antMatchers("/api/users/users")
     }
 
     override fun configure(http: HttpSecurity?) {
         http?.let {
             it.cors().and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/api/users/signin")
+                .antMatchers("/api/users/signin", "/api/users/users")
                 .permitAll().and()
                 .authorizeRequests()
                 .anyRequest().authenticated()

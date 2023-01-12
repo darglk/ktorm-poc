@@ -1,7 +1,9 @@
 package com.darglk.ktormpoc.service
 
+import com.darglk.ktormpoc.controller.AuthorityResponse
 import com.darglk.ktormpoc.controller.CreateUserRequest
 import com.darglk.ktormpoc.controller.CreateUserResponse
+import com.darglk.ktormpoc.controller.UsersResponse
 import com.darglk.ktormpoc.exception.BadRequestException
 import com.darglk.ktormpoc.repository.UserEntity
 import com.darglk.ktormpoc.repository.UserRepository
@@ -52,5 +54,14 @@ class UserServiceImpl(
             newUser.id,
             newUser.email
         )
+    }
+
+    override fun getUsers(search: String?): List<UsersResponse> {
+        return userRepository.getUsers(search).fold(mutableListOf<UsersResponse>()) { acc, e ->
+            if (acc.map { it.id }.contains(e.id)) {
+                acc.find { it.id == e.id }?.authorities?.addAll(e.authorities.map { AuthorityResponse(it.id, it.name) })
+            } else { acc.add(UsersResponse(e.id, e.email, e.authorities.map { AuthorityResponse(it.id, it.name) }.toMutableList())) }
+            acc
+        }.toList()
     }
 }

@@ -33,6 +33,11 @@ class UserController(
         return ResponseEntity.status(HttpStatus.CREATED).body<Any>(response)
     }
 
+    @GetMapping("/users")
+    fun getUsers(@RequestParam("search", required = false) search: String?): List<UsersResponse> {
+        return userService.getUsers(search)
+    }
+
 //    @GetMapping(path = ["/currentuser"])
 //    fun currentUser(request: HttpServletRequest): ResponseEntity<*> {
 //        val token: String = request.getHeader("Authorization")

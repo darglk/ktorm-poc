@@ -1,7 +1,12 @@
 package com.darglk.ktormpoc.repository
 
+import org.ktorm.database.Database
 import org.ktorm.dsl.eq
+import org.ktorm.dsl.inList
 import org.ktorm.entity.Entity
+import org.ktorm.entity.filter
+import org.ktorm.entity.sequenceOf
+import org.ktorm.entity.toList
 import org.ktorm.schema.Table
 import org.ktorm.schema.varchar
 import org.springframework.security.core.GrantedAuthority
@@ -19,6 +24,7 @@ interface UserEntity : Entity<UserEntity> {
     var id: String
     var email: String
     var password: String
+    var authorities: List<AuthorityEntity>
 }
 
 object Users : Table<UserEntity>("users") {
