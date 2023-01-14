@@ -18,8 +18,8 @@ import javax.validation.Valid
 class UserController(
     private val userService: UserService
 ) {
-    @PostMapping(path = ["/signup"])
-    fun signup(
+    @PostMapping(path = ["/signup/dsl"])
+    fun signupDsl(
         @RequestBody request: @Valid CreateUserRequest,
         errors: Errors,
         res: HttpServletResponse
@@ -27,7 +27,22 @@ class UserController(
         if (errors.hasErrors()) {
             throw ValidationException(errors)
         }
-        val response = userService.createUser(request)
+        val response = userService.createUserDsl(request)
+        val token = JwtUtils.generateToken(response.email, response.id)
+        res.setHeader("Authorization", "Bearer $token")
+        return ResponseEntity.status(HttpStatus.CREATED).body<Any>(response)
+    }
+
+    @PostMapping(path = ["/signup/seq"])
+    fun signupSeq(
+        @RequestBody request: @Valid CreateUserRequest,
+        errors: Errors,
+        res: HttpServletResponse
+    ): ResponseEntity<*> {
+        if (errors.hasErrors()) {
+            throw ValidationException(errors)
+        }
+        val response = userService.createUserSeq(request)
         val token = JwtUtils.generateToken(response.email, response.id)
         res.setHeader("Authorization", "Bearer $token")
         return ResponseEntity.status(HttpStatus.CREATED).body<Any>(response)

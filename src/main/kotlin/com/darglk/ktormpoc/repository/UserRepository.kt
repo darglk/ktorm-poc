@@ -1,8 +1,10 @@
 package com.darglk.ktormpoc.repository
 
 interface UserRepository {
+    fun findUser(id: String): UserEntity?
     fun findUserByEmail(email: String): UserAuthoritiesEntity?
-    fun insert(newUser: UserEntity)
+    fun insertSqlDsl(newUser: UserEntity)
+    fun insertSequenceApi(newUser: UserEntity)
     fun doesEmailExist(email: String): Boolean
 
     fun updatePassword(userId: String, password: String)

@@ -37,7 +37,25 @@ class UserServiceImpl(
     }
 
     @Transactional
-    override fun createUser(createUserRequest: CreateUserRequest): CreateUserResponse {
+    override fun createUserSeq(createUserRequest: CreateUserRequest): CreateUserResponse {
+        return createUser(createUserRequest, false)
+    }
+
+    @Transactional
+    override fun createUserDsl(createUserRequest: CreateUserRequest): CreateUserResponse {
+        return createUser(createUserRequest, true)
+    }
+
+    override fun getUsers(search: String?): List<UsersResponse> {
+        return userRepository.getUsers(search).fold(mutableListOf<UsersResponse>()) { acc, e ->
+            if (acc.map { it.id }.contains(e.id)) {
+                acc.find { it.id == e.id }?.authorities?.addAll(e.authorities.map { AuthorityResponse(it.id, it.name) })
+            } else { acc.add(UsersResponse(e.id, e.email, e.authorities.map { AuthorityResponse(it.id, it.name) }.toMutableList())) }
+            acc
+        }.toList()
+    }
+
+    private fun createUser(createUserRequest: CreateUserRequest, queryDsl: Boolean): CreateUserResponse {
         val email = createUserRequest.email
 
         if (userRepository.doesEmailExist(email)) {
@@ -49,19 +67,14 @@ class UserServiceImpl(
             this.password = passwordEncoder.encode(createUserRequest.password)
         }
 
-        userRepository.insert(newUser)
+        if (queryDsl) {
+            userRepository.insertSqlDsl(newUser)
+        } else {
+            userRepository.insertSequenceApi(newUser)
+        }
         return CreateUserResponse(
             newUser.id,
             newUser.email
         )
-    }
-
-    override fun getUsers(search: String?): List<UsersResponse> {
-        return userRepository.getUsers(search).fold(mutableListOf<UsersResponse>()) { acc, e ->
-            if (acc.map { it.id }.contains(e.id)) {
-                acc.find { it.id == e.id }?.authorities?.addAll(e.authorities.map { AuthorityResponse(it.id, it.name) })
-            } else { acc.add(UsersResponse(e.id, e.email, e.authorities.map { AuthorityResponse(it.id, it.name) }.toMutableList())) }
-            acc
-        }.toList()
     }
 }

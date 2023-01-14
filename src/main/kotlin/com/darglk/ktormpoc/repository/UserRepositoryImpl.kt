@@ -2,10 +2,9 @@ package com.darglk.ktormpoc.repository
 
 import org.ktorm.database.Database
 import org.ktorm.database.asIterable
-import org.ktorm.dsl.Query
 import org.ktorm.dsl.eq
-import org.ktorm.dsl.exists
 import org.ktorm.dsl.from
+import org.ktorm.dsl.inList
 import org.ktorm.dsl.insert
 import org.ktorm.dsl.leftJoin
 import org.ktorm.dsl.map
@@ -14,14 +13,13 @@ import org.ktorm.dsl.update
 import org.ktorm.dsl.where
 import org.ktorm.dsl.whereWithConditions
 import org.ktorm.entity.add
-import org.ktorm.entity.any
+import org.ktorm.entity.filter
 import org.ktorm.entity.find
-import org.ktorm.entity.map
+import org.ktorm.entity.forEach
 import org.ktorm.entity.sequenceOf
 import org.ktorm.entity.update
-import org.ktorm.expression.QueryExpression
-import org.ktorm.schema.Column
 import org.ktorm.support.postgresql.ilike
+import org.ktorm.support.postgresql.insertReturning
 import org.springframework.stereotype.Repository
 
 @Repository
@@ -30,6 +28,8 @@ class UserRepositoryImpl(
 ) : UserRepository {
 
     private val users = database.sequenceOf(Users)
+    private val usersAuthorities = database.sequenceOf(UsersAuthorities)
+    private val authorities = database.sequenceOf(Authorities)
 
     override fun getUsers(search: String?): List<UserAuthoritiesEntity> {
 
@@ -90,6 +90,10 @@ class UserRepositoryImpl(
         }
     }
 
+    override fun findUser(id: String): UserEntity? {
+        return users.find { it.id eq id }
+    }
+
 
     override fun findUserByEmail(email: String): UserAuthoritiesEntity? {
         // sequence api używa left joinów automatycznie
@@ -110,13 +114,32 @@ class UserRepositoryImpl(
             .first()
     }
 
-    override fun insert(newUser: UserEntity) {
+    override fun insertSqlDsl(newUser: UserEntity) {
+        database.insertReturning(Users, Users.id) {
+            set(it.id, newUser.id)
+            set(it.email, newUser.email)
+            set(it.password, newUser.password)
+        }?.run {
+            database.from(Authorities).select(Authorities.id)
+                .where { Authorities.name eq "READ_AUTHORITY" }
+                .map { it[Authorities.id]!! }.toList()
+                .forEach {authority ->
+                    database.insert(UsersAuthorities) {
+                        set(it.userId, this@run)
+                        set(it.authorityId, authority)
+                    }
+                }
+        }
+    }
+
+    override fun insertSequenceApi(newUser: UserEntity) {
         users.add(newUser)
-// query dsl
-//        database.insert(Users) {
-//            set(it.id, newUser.id)
-//            set(it.email, newUser.email)
-//            set(it.password, newUser.password)
-//        }
+        authorities.filter { it.name inList (listOf("READ_AUTHORITY")) }
+            .forEach {
+                usersAuthorities.add(UserAuthorityEntity {
+                    this.authority = it
+                    this.user = newUser
+                })
+            }
     }
 }
