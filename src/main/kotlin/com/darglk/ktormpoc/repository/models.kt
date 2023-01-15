@@ -22,11 +22,19 @@ enum class UserStatus {
     ENABLED, BLOCKED
 }
 
+data class UserAuthorityRow(
+    val id: String,
+    val email: String,
+    val password: String,
+    val authorityId: String?,
+    val authorityName: String?
+)
+
 data class UserAuthoritiesEntity(
     val id: String,
     val email: String,
     val password: String,
-    val authorities: List<AuthorityEntity>
+    val authorities: MutableList<AuthorityEntity>
 )
 
 interface UserEntity : Entity<UserEntity> {

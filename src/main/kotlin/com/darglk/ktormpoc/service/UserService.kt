@@ -6,7 +6,7 @@ import com.darglk.ktormpoc.controller.UsersResponse
 import org.springframework.security.core.userdetails.UserDetailsService
 
 interface UserService : UserDetailsService {
-    fun getUsers(search: String?): List<UsersResponse>
+    fun getUsers(search: String?, page: Int, pageSize: Int): List<UsersResponse>
     fun createUserSeq(createUserRequest: CreateUserRequest): CreateUserResponse
     fun createUserDsl(createUserRequest: CreateUserRequest): CreateUserResponse
 }

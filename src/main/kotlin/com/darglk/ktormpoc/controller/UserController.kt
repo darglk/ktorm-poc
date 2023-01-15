@@ -10,6 +10,7 @@ import org.springframework.validation.Errors
 import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletResponse
 import javax.validation.Valid
+import kotlin.math.absoluteValue
 
 
 @RestController
@@ -49,8 +50,11 @@ class UserController(
     }
 
     @GetMapping("/users")
-    fun getUsers(@RequestParam("search", required = false) search: String?): List<UsersResponse> {
-        return userService.getUsers(search)
+    fun getUsers(
+        @RequestParam("search", required = false) search: String?,
+        @RequestParam("page", defaultValue = "0", required = false) page: Int, @RequestParam("pageSize", defaultValue = "1", required = false) pageSize: Int
+    ): List<UsersResponse> {
+        return userService.getUsers(search, page.absoluteValue, pageSize.absoluteValue)
     }
 
 //    @GetMapping(path = ["/currentuser"])

@@ -8,4 +8,5 @@ interface TicketService {
     fun createTicketIncorrect(request: CreateTicketRequest)
     fun createTicket(request: @Valid CreateTicketRequest)
     fun getTickets(): List<TicketResponse>
+    fun deleteTicket(ticketId: String)
 }

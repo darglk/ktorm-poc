@@ -14,7 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.UUID
+import java.util.*
 
 @Service
 class UserServiceImpl(
@@ -23,7 +23,7 @@ class UserServiceImpl(
     private val passwordEncoder: PasswordEncoder
 ) : UserService {
 
-    @Throws(UsernameNotFoundException::class)
+    @Transactional(readOnly = true)
     override fun loadUserByUsername(username: String): UserDetails {
         val user = userRepository.findUserByEmail(username) ?: throw UsernameNotFoundException("user not found")
         return User(
@@ -46,12 +46,13 @@ class UserServiceImpl(
         return createUser(createUserRequest, true)
     }
 
-    override fun getUsers(search: String?): List<UsersResponse> {
-        return userRepository.getUsers(search).fold(mutableListOf<UsersResponse>()) { acc, e ->
-            if (acc.map { it.id }.contains(e.id)) {
-                acc.find { it.id == e.id }?.authorities?.addAll(e.authorities.map { AuthorityResponse(it.id, it.name) })
-            } else { acc.add(UsersResponse(e.id, e.email, e.authorities.map { AuthorityResponse(it.id, it.name) }.toMutableList())) }
-            acc
+    @Transactional(readOnly = true)
+    override fun getUsers(search: String?, page: Int, pageSize: Int): List<UsersResponse> {
+        return userRepository.getUsers(search, page, pageSize).map {
+            UsersResponse(
+                it.id, it.email,
+                it.authorities.map { AuthorityResponse(it.id, it.name) }.toList()
+            )
         }.toList()
     }
 

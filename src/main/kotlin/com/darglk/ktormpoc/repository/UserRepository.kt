@@ -10,5 +10,5 @@ interface UserRepository {
     fun updatePassword(userId: String, password: String)
 
     fun updateEmail(userId: String, email: String)
-    fun getUsers(search: String?): List<UserAuthoritiesEntity>
+    fun getUsers(search: String?, page: Int, pageSize: Int): List<UserAuthoritiesEntity>
 }

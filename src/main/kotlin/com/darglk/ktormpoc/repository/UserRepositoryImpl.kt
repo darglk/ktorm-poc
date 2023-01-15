@@ -2,12 +2,16 @@ package com.darglk.ktormpoc.repository
 
 import org.ktorm.database.Database
 import org.ktorm.database.asIterable
+import org.ktorm.dsl.asc
+import org.ktorm.dsl.desc
 import org.ktorm.dsl.eq
 import org.ktorm.dsl.from
 import org.ktorm.dsl.inList
 import org.ktorm.dsl.insert
 import org.ktorm.dsl.leftJoin
+import org.ktorm.dsl.limit
 import org.ktorm.dsl.map
+import org.ktorm.dsl.orderBy
 import org.ktorm.dsl.select
 import org.ktorm.dsl.update
 import org.ktorm.dsl.where
@@ -31,7 +35,13 @@ class UserRepositoryImpl(
     private val usersAuthorities = database.sequenceOf(UsersAuthorities)
     private val authorities = database.sequenceOf(Authorities)
 
-    override fun getUsers(search: String?): List<UserAuthoritiesEntity> {
+    override fun getUsers(search: String?, page: Int, pageSize: Int): List<UserAuthoritiesEntity> {
+
+        val userIds = database.from(Users).select(Users.id).limit(page * pageSize, pageSize).whereWithConditions {
+            if (search?.isEmpty() == false) {
+                it += Users.email ilike ("%$search%")
+            }
+        }.orderBy(Users.email.asc())
 
         return database.from(Users)
             .leftJoin(UsersAuthorities, on = UsersAuthorities.userId eq Users.id)
@@ -39,20 +49,34 @@ class UserRepositoryImpl(
             // + dla select users.*, authorities.id, authrities.name
             .select(Users.columns + Authorities.id + Authorities.name)
             .whereWithConditions {
+                it += Users.id inList userIds
                 if (search?.isEmpty() == false) {
-                    Users.email ilike ("%$search%")
+                    it += Users.email ilike ("%$search%")
                 }
-            }.map {
-                UserAuthoritiesEntity(
+            }.orderBy(Users.email.asc()).map {
+                UserAuthorityRow(
                     it[Users.id]!!,
                     it[Users.email]!!,
                     it[Users.password]!!,
-                    if (it[Authorities.id] != null) listOf(AuthorityEntity {
-                        id = it[Authorities.id]!!
-                        name = it[Authorities.name]!!
-                    }) else listOf()
+                    it[Authorities.id],
+                    it[Authorities.name]
                 )
-            }
+            }.fold(mutableListOf<UserAuthoritiesEntity>()) { acc, e ->
+                val authorities = if (e.authorityId != null) {
+                    mutableListOf(AuthorityEntity {
+                        this.id = e.authorityId
+                        this.name = e.authorityName!!
+                    })
+                } else mutableListOf()
+
+                if (acc.map { it.id }.contains(e.id)) {
+                    val entity = acc.find { it.id == e.id }!!
+                    entity.authorities.addAll(authorities)
+                } else {
+                    acc.add(UserAuthoritiesEntity(e.id, e.email, e.password, authorities))
+                }
+                acc
+            }.toList()
     }
 
     override fun doesEmailExist(email: String): Boolean {
@@ -123,7 +147,7 @@ class UserRepositoryImpl(
             database.from(Authorities).select(Authorities.id)
                 .where { Authorities.name eq "READ_AUTHORITY" }
                 .map { it[Authorities.id]!! }.toList()
-                .forEach {authority ->
+                .forEach { authority ->
                     database.insert(UsersAuthorities) {
                         set(it.userId, this@run)
                         set(it.authorityId, authority)

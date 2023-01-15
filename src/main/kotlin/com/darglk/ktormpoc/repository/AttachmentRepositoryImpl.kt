@@ -3,6 +3,7 @@ package com.darglk.ktormpoc.repository
 import org.ktorm.database.Database
 import org.ktorm.dsl.eq
 import org.ktorm.entity.filter
+import org.ktorm.entity.removeIf
 import org.ktorm.entity.sequenceOf
 import org.ktorm.entity.toList
 import org.ktorm.support.postgresql.bulkInsert
@@ -28,5 +29,9 @@ class AttachmentRepositoryImpl(
 
     override fun selectAttachments(ticketId: String) : List<AttachmentEntity> {
         return attachments.filter { it.ticketId eq ticketId }.toList()
+    }
+
+    override fun delete(ticketId: String) {
+        attachments.removeIf { it.ticketId eq ticketId }
     }
 }

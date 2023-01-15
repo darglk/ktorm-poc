@@ -78,4 +78,10 @@ class TicketServiceImpl(
                 })
         }
     }
+
+    @Transactional
+    override fun deleteTicket(ticketId: String) {
+        attachmentRepository.delete(ticketId)
+        ticketRepository.delete(ticketId)
+    }
 }
