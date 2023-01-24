@@ -39,6 +39,11 @@ class TicketController(
         return ticketService.getTickets()
     }
 
+    @GetMapping("/stats")
+    fun getTicketsStats() : List<TicketStatsResponse> {
+        return ticketService.getTicketsStats()
+    }
+
     @DeleteMapping("/{ticketId}")
     fun deleteTicket(@PathVariable("ticketId") ticketId: String) {
         ticketService.deleteTicket(ticketId)

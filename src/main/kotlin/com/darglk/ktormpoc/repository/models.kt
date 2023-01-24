@@ -39,6 +39,7 @@ data class UserAuthoritiesEntity(
 
 interface UserEntity : Entity<UserEntity> {
     // bez compaiona nie można tworzyć instancji i przypisywać wartości do pól
+    // UserEntity.create
     companion object : Entity.Factory<UserEntity>()
     var id: String
     var email: String
@@ -111,9 +112,9 @@ interface TicketEntity : Entity<TicketEntity> {
     var updatedAt: Instant
     var attachments: List<AttachmentEntity>
     // też nie działa:
-//    fun getAttachments(database: Database): List<AttachmentEntity> {
-//        return database.sequenceOf(Attachemts).filter { it.ticketId eq this.id }.toList()
-//    }
+    fun getAttachments(database: Database): List<AttachmentEntity> {
+        return database.sequenceOf(Attachemts).filter { it.ticketId eq this.id }.toList()
+    }
 }
 
 object Tickets : Table<TicketEntity>("tickets") {
@@ -125,3 +126,8 @@ object Tickets : Table<TicketEntity>("tickets") {
     val createdAt = timestamp("created_at").bindTo { it.createdAt }
     val updatedAt = timestamp("updated_at").bindTo { it.updatedAt }
 }
+
+data class TicketStatusCountEntity(
+    val status: TicketStatus,
+    val count: Int
+)

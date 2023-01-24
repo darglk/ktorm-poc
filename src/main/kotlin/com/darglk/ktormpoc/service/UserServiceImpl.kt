@@ -3,6 +3,8 @@ package com.darglk.ktormpoc.service
 import com.darglk.ktormpoc.controller.AuthorityResponse
 import com.darglk.ktormpoc.controller.CreateUserRequest
 import com.darglk.ktormpoc.controller.CreateUserResponse
+import com.darglk.ktormpoc.controller.UpdateEmailRequest
+import com.darglk.ktormpoc.controller.UpdatePasswordRequest
 import com.darglk.ktormpoc.controller.UsersResponse
 import com.darglk.ktormpoc.exception.BadRequestException
 import com.darglk.ktormpoc.repository.UserEntity
@@ -44,6 +46,23 @@ class UserServiceImpl(
     @Transactional
     override fun createUserDsl(createUserRequest: CreateUserRequest): CreateUserResponse {
         return createUser(createUserRequest, true)
+    }
+
+    @Transactional(readOnly = true)
+    override fun doesUserExist(email: String) {
+        if (userRepository.doesEmailExist(email)) {
+            throw BadRequestException("user exists")
+        }
+    }
+
+    @Transactional
+    override fun updatePassword(request: UpdatePasswordRequest) {
+        userRepository.updatePassword(request.userId, request.password)
+    }
+
+    @Transactional
+    override fun updateEmail(request: UpdateEmailRequest) {
+        userRepository.updateEmail(request.userId, request.email)
     }
 
     @Transactional(readOnly = true)

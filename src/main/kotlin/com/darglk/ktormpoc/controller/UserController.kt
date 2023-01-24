@@ -3,7 +3,6 @@ package com.darglk.ktormpoc.controller
 import com.darglk.ktormpoc.exception.ValidationException
 import com.darglk.ktormpoc.service.UserService
 import com.darglk.ktormpoc.utils.JwtUtils
-import lombok.RequiredArgsConstructor
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.Errors
@@ -15,7 +14,6 @@ import kotlin.math.absoluteValue
 
 @RestController
 @RequestMapping("/api/users")
-@RequiredArgsConstructor
 class UserController(
     private val userService: UserService
 ) {
@@ -57,19 +55,18 @@ class UserController(
         return userService.getUsers(search, page.absoluteValue, pageSize.absoluteValue)
     }
 
-//    @GetMapping(path = ["/currentuser"])
-//    fun currentUser(request: HttpServletRequest): ResponseEntity<*> {
-//        val token: String = request.getHeader("Authorization")
-//        val parsedToken: Jws<Claims> = JwtUtils.parseToken(token)
-//        return ResponseEntity.ok(
-//            mapOf(Pair(
-//                "currentUser", mapOf(
-//                    Pair("id", parsedToken.getBody().getId()),
-//                    Pair("email", parsedToken.getBody().getSubject()),
-//                    Pair("iat", parsedToken.getBody().getIssuedAt().getTime())
-//                )
-//            )
-//            )
-//        )
-//    }
+    @GetMapping("/exist")
+    fun doesUserExist(@RequestParam("email") email: String) {
+        userService.doesUserExist(email)
+    }
+
+    @PutMapping("/password")
+    fun updatePassword(@RequestBody request: UpdatePasswordRequest) {
+        userService.updatePassword(request)
+    }
+
+    @PutMapping("/email")
+    fun updateEmail(@RequestBody request: UpdateEmailRequest) {
+        userService.updateEmail(request)
+    }
 }

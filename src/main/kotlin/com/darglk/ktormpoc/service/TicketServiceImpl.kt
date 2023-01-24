@@ -3,6 +3,7 @@ package com.darglk.ktormpoc.service
 import com.darglk.ktormpoc.controller.AttachmentResponse
 import com.darglk.ktormpoc.controller.CreateTicketRequest
 import com.darglk.ktormpoc.controller.TicketResponse
+import com.darglk.ktormpoc.controller.TicketStatsResponse
 import com.darglk.ktormpoc.repository.AttachmentEntity
 import com.darglk.ktormpoc.repository.AttachmentRepository
 import com.darglk.ktormpoc.repository.TicketEntity
@@ -83,5 +84,12 @@ class TicketServiceImpl(
     override fun deleteTicket(ticketId: String) {
         attachmentRepository.delete(ticketId)
         ticketRepository.delete(ticketId)
+    }
+
+    @Transactional(readOnly = true)
+    override fun getTicketsStats(): List<TicketStatsResponse> {
+        return ticketRepository.selectStatusWithCount("83c218e9-40bd-4def-8c0c-838f8a3f6849")
+            .map { TicketStatsResponse(it.status.name, it.count) }
+            .toList()
     }
 }
