@@ -81,6 +81,7 @@ class UserServiceImpl(
         if (userRepository.doesEmailExist(email)) {
             throw BadRequestException("Email in use")
         }
+
         val newUser = UserEntity {
             this.id = UUID.randomUUID().toString()
             this.email = createUserRequest.email

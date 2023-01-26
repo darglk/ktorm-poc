@@ -69,7 +69,7 @@ class TicketServiceImpl(
         attachmentRepository.insertAll(attachments)
     }
 
-    // wypierdoli się na invalid cursor xd
+    // wywala się za drugim razem się na invalid cursor
     @Transactional(readOnly = true)
     override fun getTickets(): List<TicketResponse> {
         return ticketRepository.select().map {

@@ -37,11 +37,16 @@ class UserRepositoryImpl(
 
     override fun getUsers(search: String?, page: Int, pageSize: Int): List<UserAuthoritiesEntity> {
 
-        val userIds = database.from(Users).select(Users.id).limit(page * pageSize, pageSize).whereWithConditions {
-            if (search?.isEmpty() == false) {
-                it += Users.email ilike ("%$search%")
+        val userIds = database
+            .from(Users)
+            .select(Users.id)
+            .limit(page * pageSize, pageSize)
+            .whereWithConditions {
+                if (search?.isEmpty() == false) {
+                    it += Users.email ilike ("%$search%")
+                }
             }
-        }.orderBy(Users.email.asc())
+            .orderBy(Users.email.asc())
 
         return database.from(Users)
             .leftJoin(UsersAuthorities, on = UsersAuthorities.userId eq Users.id)

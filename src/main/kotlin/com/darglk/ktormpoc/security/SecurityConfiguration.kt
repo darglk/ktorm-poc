@@ -22,7 +22,7 @@ class SecurityConfiguration(
     override fun configure(web: WebSecurity?) {
         web?.ignoring()
             ?.antMatchers("/api/users/signup/*")
-            ?.antMatchers("/api/users/users")
+            ?.antMatchers("/api/users/**")
             ?.antMatchers("/api/tickets/**")
     }
 
